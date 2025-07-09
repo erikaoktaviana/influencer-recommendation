@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Influencer Recommendation</title>
+</head>
+<body>
+    <h1>Influencer Recommendation</h1>
+    
+    <form id="recommendation-form">
+        <label for="category">Category: </label>
+        <input type="text" id="category" name="category" required>
+        <br>
+        <label for="influencer">Influencer Username: </label>
+        <input type="text" id="influencer" name="influencer" required>
+        <br>
+        <button type="submit">Get Recommendations</button>
+    </form>
+
+    <div id="recommendations">
+        <h3>Recommendations:</h3>
+        <ul id="recommendation-list"></ul>
+    </div>
+
+    <script>
+        document.getElementById("recommendation-form").addEventListener("submit", function(event) {
+            event.preventDefault();
+
+            const category = document.getElementById("category").value;
+            const influencer = document.getElementById("influencer").value;
+
+            const data = {
+                category: category,
+                influencer: influencer
+            };
+
+            fetch('http://127.0.0.1:5000/recommend', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(data => {
+                const recommendationList = document.getElementById("recommendation-list");
+                recommendationList.innerHTML = '';
+
+                if (data.recommendations) {
+                    for (const [influencer, similarity] of Object.entries(data.recommendations)) {
+                        const listItem = document.createElement("li");
+                        listItem.textContent = `${influencer}: ${similarity}`;
+                        recommendationList.appendChild(listItem);
+                    }
+                } else {
+                    const errorItem = document.createElement("li");
+                    errorItem.textContent = data.message || 'No recommendations found';
+                    recommendationList.appendChild(errorItem);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    </script>
+</body>
+</html>
